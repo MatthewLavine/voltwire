@@ -467,25 +467,58 @@ function animate() {
             ctx.stroke();
 
             if (lightBulb.lit && w.color !== COLORS.neutral) {
-                ctx.strokeStyle = 'rgba(0, 229, 255, 0.2)';
-                ctx.lineWidth = 12;
+                // Glow effect for hot wires
+                ctx.save();
+                ctx.strokeStyle = w.color === COLORS.traveler ? 'rgba(255, 0, 0, 0.4)' : 'rgba(0, 229, 255, 0.3)';
+                ctx.lineWidth = 14;
+                ctx.globalAlpha = 0.4 + Math.sin(Date.now() / 200) * 0.1; // Subtle pulsing hot wire
                 ctx.stroke();
+                ctx.restore();
             }
         }
     });
 
     if (lightBulb.inputId) {
-        ctx.beginPath();
+        const time = Date.now();
+        const pulse = Math.sin(time / 300) * 5;
+        const bulbX = lightBulb.x;
         const bulbY = lightBulb.y;
-        ctx.arc(lightBulb.x, bulbY, 40, 0, Math.PI * 2);
-        ctx.fillStyle = lightBulb.lit ? 'rgba(255, 215, 0, 0.8)' : '#222';
+
         if (lightBulb.lit) {
-            ctx.shadowBlur = 50;
-            ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+            // Stronger, multi-layered glow for the light bulb
+            const gradGlow = ctx.createRadialGradient(bulbX, bulbY, 20, bulbX, bulbY, 60 + pulse);
+            gradGlow.addColorStop(0, 'rgba(255, 215, 0, 0.4)');
+            gradGlow.addColorStop(0.5, 'rgba(255, 215, 0, 0.1)');
+            gradGlow.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            ctx.save();
+            ctx.fillStyle = gradGlow;
+            ctx.beginPath();
+            ctx.arc(bulbX, bulbY, 70 + pulse, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.shadowBlur = 30 + pulse;
+            ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+            ctx.fillStyle = '#fff9d6';
+        } else {
+            ctx.fillStyle = '#222';
+            ctx.shadowBlur = 0;
         }
+
+        ctx.beginPath();
+        ctx.arc(bulbX, bulbY, 40, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.strokeStyle = '#444';
+        
+        // Lens effect on bulb
+        const lensGrad = ctx.createRadialGradient(bulbX - 10, bulbY - 10, 5, bulbX, bulbY, 40);
+        lensGrad.addColorStop(0, lightBulb.lit ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.05)');
+        lensGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = lensGrad;
+        ctx.fill();
+
+        ctx.strokeStyle = lightBulb.lit ? '#ffd700' : '#444';
         ctx.lineWidth = 2;
         ctx.stroke();
     }
@@ -493,32 +526,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-const stylePatch = document.createElement('style');
-stylePatch.innerHTML = `
-    .switch-visual {
-        position: absolute; width: 60px; height: 100px;
-        background: #222; border: 2px solid #555; border-radius: 8px;
-        cursor: pointer; display: flex; flex-direction: column;
-        justify-content: center; align-items: center; pointer-events: auto;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-        background-image: 
-            radial-gradient(circle at 10% 10%, #444 1px, transparent 1px),
-            radial-gradient(circle at 90% 10%, #444 1px, transparent 1px),
-            radial-gradient(circle at 10% 90%, #444 1px, transparent 1px),
-            radial-gradient(circle at 90% 90%, #444 1px, transparent 1px);
-    }
-    .switch-visual .toggle {
-        width: 28px; height: 54px; background: #333; border: 1px solid #444;
-        border-radius: 4px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        transform: translateY(14px);
-    }
-    .switch-visual.on .toggle {
-        background: var(--accent-blue); transform: translateY(-14px);
-        box-shadow: 0 0 25px var(--accent-blue);
-    }
-    .sw-label { font-size: 9px; color: var(--text-muted); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
-    .three-way { border-color: #664400; }
-`;
-document.head.appendChild(stylePatch);
+// Hardcoded styles removed as they are now in style.css
 
 init();
