@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoltWire - Light Switch Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="dark-mode">
+    <div id="app">
+        <header>
+            <div class="logo">VOLT<span>WIRE</span></div>
+            <nav id="level-nav">
+                <button class="nav-btn active" data-level="1">Level 1: Single Pole</button>
+                <button class="nav-btn" data-level="2">Level 2: 3nd State Logic</button>
+                <button class="nav-btn" data-level="3">Level 3: 3-Way Switching</button>
+            </nav>
+            <div class="status-panel">
+                <div id="circuit-status" class="status-indicator">
+                    <span class="pulse"></span> POWER OFF
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="canvas-container">
+                <canvas id="circuit-canvas"></canvas>
+                <div id="interaction-layer"></div>
+            </div>
+
+            <aside id="toolbox">
+                <div class="glass-panel">
+                    <h3>Circuit Inspector</h3>
+                    <div class="inspector-content">
+                        <p id="hint-text">Connect the Power to the Switch, then to the Lamp.</p>
+                        <div class="legend">
+                            <div class="legend-item"><span class="wire-sample hot"></span> Hot (Black)</div>
+                            <div class="legend-item"><span class="wire-sample neutral"></span> Neutral (White)</div>
+                            <div class="legend-item"><span class="wire-sample ground"></span> Ground (Copper)</div>
+                            <div class="legend-item"><span class="wire-sample traveler"></span> Traveler (Red)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel schematic-hint">
+                    <div class="panel-header">
+                        <h3>Schematic Hint</h3>
+                        <button id="toggle-hint" class="icon-btn">👁️</button>
+                    </div>
+                    <div id="hint-visual" class="hidden">
+                        <canvas id="hint-canvas"></canvas>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer>
+            <button id="reset-circuit" class="danger">Reset Wires</button>
+            <div class="instruction">Drag from terminal to terminal to wire. Click switches to toggle.</div>
+        </footer>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>
