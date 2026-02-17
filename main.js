@@ -1,4 +1,5 @@
 import { Circuit } from './circuit.js';
+import { SoundManager } from './sounds.js';
 
 const canvas = document.getElementById('circuit-canvas');
 const ctx = canvas.getContext('2d');
@@ -7,6 +8,7 @@ const statusIndicator = document.getElementById('circuit-status');
 const hintText = document.getElementById('hint-text');
 
 let circuit = new Circuit();
+let sounds = new SoundManager();
 let currentLevel = 1;
 let terminals = []; // { id, x, y, type, label }
 let wires = []; // { startId, endId, color }
@@ -19,6 +21,7 @@ const hintCanvas = document.getElementById('hint-canvas');
 const hctx = hintCanvas?.getContext('2d');
 const toggleHintBtn = document.getElementById('toggle-hint');
 const hintVisual = document.getElementById('hint-visual');
+const toggleMuteBtn = document.getElementById('toggle-mute');
 
 const COLORS = {
     hot: '#111111',
@@ -31,9 +34,25 @@ function init() {
     resize();
     window.addEventListener('resize', resize);
 
+    // Initialize sounds on first interaction
+    const initAudio = () => {
+        sounds.init();
+        window.removeEventListener('click', initAudio);
+        window.removeEventListener('mousedown', initAudio);
+    };
+    window.addEventListener('click', initAudio);
+    window.addEventListener('mousedown', initAudio);
+
     document.getElementById('reset-circuit').addEventListener('click', () => {
         wires = [];
+        sounds.playReset();
         checkCircuit();
+    });
+
+    toggleMuteBtn?.addEventListener('click', () => {
+        const isMuted = sounds.toggleMute();
+        toggleMuteBtn.innerText = isMuted ? '🔇' : '🔊';
+        toggleMuteBtn.style.opacity = isMuted ? '0.5' : '1';
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -48,6 +67,7 @@ function init() {
 
     toggleHintBtn?.addEventListener('click', () => {
         hintVisual.classList.toggle('hidden');
+        sounds.playClick();
         if (!hintVisual.classList.contains('hidden')) {
             drawHint();
         }
@@ -57,6 +77,7 @@ function init() {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
+            sounds.playClick();
             loadLevel(parseInt(e.target.dataset.level));
         });
     });
@@ -153,6 +174,7 @@ function addTerminal(x, y, id, label) {
 
     term.addEventListener('mousedown', (e) => {
         dragStart = { id, x, y };
+        sounds.playClick();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -180,6 +202,7 @@ function addSwitch(id, t1, t2, x, y, is3Way = false) {
         const sw = switches.find(s => s.id === id);
         sw.state = !sw.state;
         swEl.classList.toggle('on', sw.state);
+        sounds.playToggle(sw.state);
         checkCircuit();
     });
 
@@ -194,6 +217,7 @@ function connect(id1, id2) {
     else if (id1.includes('trav') || id2.includes('trav') || id1.includes('-t') || id2.includes('-t')) color = COLORS.traveler;
 
     wires.push({ startId: id1, endId: id2, color });
+    sounds.playConnect();
     checkCircuit();
 }
 
@@ -225,7 +249,15 @@ function checkCircuit() {
         loadNodes
     );
 
+    const wasLit = lightBulb.lit;
     lightBulb.lit = analysis.isPowered;
+
+    if (lightBulb.lit && !wasLit && analysis.severity === 'success') {
+        sounds.playSuccess();
+    } else if (analysis.severity === 'danger') {
+        sounds.playDanger();
+    }
+
     updateStatus(analysis);
 }
 

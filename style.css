@@ -245,6 +245,12 @@ button.danger:hover {
     color: white;
 }
 
+.status-panel {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
 .status-indicator {
     display: flex;
     align-items: center;
@@ -252,6 +258,7 @@ button.danger:hover {
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 1px;
+    min-width: 140px;
 }
 
 .pulse {
